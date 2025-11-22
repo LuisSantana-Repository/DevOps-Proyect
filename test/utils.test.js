@@ -59,8 +59,10 @@ describe('Read Tests - Classes', () => {
   test('should contain a list of classes ', async() => {
     const result = await Class.findClasses();
     expect(result).toBeDefined();
-    expect(Array.isArray(result)).toBe(true);
-    expect(result.length).toBeGreaterThan(0);
+    expect(result).toHaveProperty('users');
+    expect(result).toHaveProperty('total');
+    expect(Array.isArray(result.users)).toBe(true);
+    expect(result.total).toBeGreaterThan(0);
   });
 
 });

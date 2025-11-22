@@ -7,6 +7,12 @@ const CourseRoutes = require('../routes/CourseRoutes');
 const ScheduleRoutes = require('../routes/ScheduleRoutes');
 const ClassroomRoutes = require('../routes/ClassroomRoutes');
 const cookieParser = require('cookie-parser');
+const {mongoose} = require('../db/connectdb');
+
+// Close database connection after all tests
+afterAll(async () => {
+  await mongoose.connection.close();
+});
 
 // Create Express app for testing
 const app = express();
