@@ -154,20 +154,63 @@ for collection in "${COLLECTIONS[@]}"; do
 
     echo -e "${BLUE}→${NC} Importing ${YELLOW}${collection}${NC} collection..."
 
-    # Count documents in seed file
-    doc_count=$(mongosh "$MONGODB_URI" --quiet --eval "
-        const data = $(cat "$seed_file");
-        print(data.length);
-    ")
+    # Import the data with Extended JSON conversion
+    result=$(mongosh "$MONGODB_URI" --quiet --eval "
+        // Function to recursively convert Extended JSON to native MongoDB types
+        function convertExtendedJSON(obj) {
+            if (obj === null || obj === undefined) return obj;
 
-    # Import the data
-    mongosh "$MONGODB_URI" --quiet --eval "
-        const data = $(cat "$seed_file");
-        const result = db.${collection}.insertMany(data, { ordered: false });
-        print('Inserted ' + result.insertedCount + ' documents');
-    " 2>&1 | grep -v "^Current Mongosh" | grep -v "^For mongosh" | grep -v "^$" || {
-        echo -e "${YELLOW}⚠${NC}  Some documents may already exist (duplicates skipped)"
-    }
+            // Handle ObjectId
+            if (obj.\$oid) {
+                return new ObjectId(obj.\$oid);
+            }
+
+            // Handle arrays
+            if (Array.isArray(obj)) {
+                return obj.map(item => convertExtendedJSON(item));
+            }
+
+            // Handle objects
+            if (typeof obj === 'object') {
+                const converted = {};
+                for (const key in obj) {
+                    converted[key] = convertExtendedJSON(obj[key]);
+                }
+                return converted;
+            }
+
+            return obj;
+        }
+
+        // Read and convert the JSON data
+        const rawData = $(cat "$seed_file");
+        const data = convertExtendedJSON(rawData);
+
+        try {
+            const result = db.${collection}.insertMany(data, { ordered: false });
+            print('SUCCESS:' + result.insertedCount);
+        } catch (err) {
+            if (err.code === 11000) {
+                // Duplicate key error - count how many were actually inserted
+                const inserted = err.result?.nInserted || 0;
+                print('PARTIAL:' + inserted);
+            } else {
+                print('ERROR:' + err.message);
+            }
+        }
+    " 2>&1)
+
+    # Parse the result
+    if echo "$result" | grep -q "SUCCESS:"; then
+        count=$(echo "$result" | grep "SUCCESS:" | cut -d':' -f2)
+        echo -e "${GREEN}✓${NC} Inserted ${count} documents"
+    elif echo "$result" | grep -q "PARTIAL:"; then
+        count=$(echo "$result" | grep "PARTIAL:" | cut -d':' -f2)
+        echo -e "${YELLOW}⚠${NC}  Inserted ${count} documents (some duplicates skipped)"
+    elif echo "$result" | grep -q "ERROR:"; then
+        error=$(echo "$result" | grep "ERROR:" | cut -d':' -f2-)
+        echo -e "${RED}✗${NC} Error: ${error}"
+    fi
 
     echo -e "${GREEN}✓${NC} ${collection} collection processed"
     echo ""
