@@ -1,6 +1,17 @@
 name: uni-app
 
+# ============================================================
+# MONGODB ATLAS CONFIGURATION
+# ============================================================
+# To use MongoDB Atlas instead of local MongoDB:
+# 1. Set MONGO_URI in your .env file:
+#    MONGO_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/YOUR_DATABASE?retryWrites=true&w=majority
+# 2. Comment out or remove the 'mongo' service below
+# 3. Update app service depends_on to remove mongo dependency
+# ============================================================
+
 services:
+  # Local MongoDB (comment out this entire service when using Atlas)
   mongo:
     image: mongo:7
     container_name: mongo
@@ -17,6 +28,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+    profiles:
+      - local  # Use 'docker compose --profile local up' to start with local MongoDB
 
   seed:
     image: node:20-alpine
@@ -24,16 +37,21 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+        # When using Atlas, remove the mongo dependency above
     working_dir: /seed
     volumes:
       - ./seed:/seed                 # RW
       - ./db/seeds:/seed/seeds:ro    # JSONs
       - seed_node_modules:/seed/node_modules
     environment:
+      # For MongoDB Atlas, set MONGO_URI in .env:
+      # MONGO_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net
       MONGO_URI: ${MONGO_URI:-mongodb://root:example@mongo:27017}
       MONGO_DB: ${MONGO_INITDB_DATABASE:-app}
     command: ["sh", "-lc", "npm --yes add mongodb && node /seed/seed.mjs"]
     restart: "no"
+    profiles:
+      - local  # Use 'docker compose --profile local up' to run seed with local MongoDB
 
   app:
     build:
@@ -44,14 +62,28 @@ services:
         condition: service_healthy
       seed:
         condition: service_completed_successfully
+      # When using MongoDB Atlas, remove mongo and seed dependencies above
     environment:
-      # La app debe leer esta URI (ajústalo al nombre que espere tu server: MONGO_URI, DB_URI, etc.)
+      # MongoDB Atlas connection (set in .env file):
+      # MONGO_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/YOUR_DATABASE?retryWrites=true&w=majority
+      #
+      # Or use individual components:
+      # DB_USER=YOUR_MONGODB_ATLAS_USERNAME
+      # DB_PASSWORD=YOUR_MONGODB_ATLAS_PASSWORD
+      # DB_HOST=YOUR_CLUSTER.mongodb.net
+      # DB_NAME=YOUR_DATABASE_NAME
+      # DB_OPTIONS=retryWrites=true&w=majority&appName=YourApp
       MONGO_URI: ${MONGO_URI:-mongodb://root:example@mongo:27017/app?authSource=admin}
       NODE_ENV: ${NODE_ENV:-development}
       PORT: ${PORT:-3000}
+      # MongoDB Atlas environment variables (optional, for component-based connection)
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_OPTIONS: ${DB_OPTIONS}
     ports:
       - "${PORT:-3000}:3000"
-    # Si el package.json usa "start", esto basta; si requiere build TS, ver notas
     command: [ "npm", "start" ]
 
 volumes:

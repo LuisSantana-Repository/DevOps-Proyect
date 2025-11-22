@@ -13,6 +13,20 @@ variables:
   value: '$(Build.BuildId)'
 - name: testResultsDir
   value: '$(System.DefaultWorkingDirectory)/test-results'
+# MongoDB Atlas Configuration (set these in Azure DevOps pipeline variables)
+# - name: MONGODB_URI
+#   value: 'mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/YOUR_DATABASE?retryWrites=true&w=majority'
+# Or use individual components:
+# - name: DB_USER
+#   value: 'YOUR_MONGODB_ATLAS_USERNAME'
+# - name: DB_PASSWORD
+#   value: 'YOUR_MONGODB_ATLAS_PASSWORD'  # Mark as secret in Azure DevOps
+# - name: DB_HOST
+#   value: 'YOUR_CLUSTER.mongodb.net'
+# - name: DB_NAME
+#   value: 'YOUR_DATABASE_NAME'
+# - name: DB_OPTIONS
+#   value: 'retryWrites=true&w=majority&appName=YourApp'
 
 stages:
 - stage: Build
@@ -40,7 +54,18 @@ stages:
     - task: CmdLine@2
       displayName: Run tests
       inputs:
-        script: docker run --rm -v $(testResultsDir):/usr/src/app/test-results -v ${PWD}/coverage:/usr/src/app/coverage test:$(tag) npm test -- --coverage
+        script: |
+          docker run --rm \
+            -v $(testResultsDir):/usr/src/app/test-results \
+            -v ${PWD}/coverage:/usr/src/app/coverage \
+            -e MONGODB_URI="$(MONGODB_URI)" \
+            -e DB_USER="$(DB_USER)" \
+            -e DB_PASSWORD="$(DB_PASSWORD)" \
+            -e DB_HOST="$(DB_HOST)" \
+            -e DB_NAME="$(DB_NAME)" \
+            -e DB_OPTIONS="$(DB_OPTIONS)" \
+            test:$(tag) \
+            npm test -- --coverage
     
     - task: PublishTestResults@2
       displayName: Publish test results
