@@ -90,6 +90,73 @@ stages:
               TOKEN_KEY: $(TOKEN_KEY)
               NODE_ENV: test
 
+          # Validate coverage threshold (40%)
+          - script: |
+              echo "📊 Validando coverage mínimo..."
+
+              if [ ! -f "coverage/coverage-summary.json" ]; then
+                echo "❌ ERROR: Archivo de coverage no encontrado"
+                exit 1
+              fi
+
+              # Extraer porcentajes de coverage
+              STATEMENTS=$(node -pe "JSON.parse(require('fs').readFileSync('coverage/coverage-summary.json')).total.statements.pct")
+              LINES=$(node -pe "JSON.parse(require('fs').readFileSync('coverage/coverage-summary.json')).total.lines.pct")
+              FUNCTIONS=$(node -pe "JSON.parse(require('fs').readFileSync('coverage/coverage-summary.json')).total.functions.pct")
+              BRANCHES=$(node -pe "JSON.parse(require('fs').readFileSync('coverage/coverage-summary.json')).total.branches.pct")
+
+              echo "📈 Coverage actual:"
+              echo "  Statements: ${STATEMENTS}%"
+              echo "  Lines: ${LINES}%"
+              echo "  Functions: ${FUNCTIONS}%"
+              echo "  Branches: ${BRANCHES}%"
+              echo ""
+
+              # Validar que cumple los requisitos mínimos
+              FAILED=0
+
+              if (( $(echo "$STATEMENTS < 40" | bc -l) )); then
+                echo "❌ Statements coverage (${STATEMENTS}%) está por debajo del 40% requerido"
+                FAILED=1
+              else
+                echo "✅ Statements coverage: ${STATEMENTS}% >= 40%"
+              fi
+
+              if (( $(echo "$LINES < 40" | bc -l) )); then
+                echo "❌ Lines coverage (${LINES}%) está por debajo del 40% requerido"
+                FAILED=1
+              else
+                echo "✅ Lines coverage: ${LINES}% >= 40%"
+              fi
+
+              if (( $(echo "$FUNCTIONS < 30" | bc -l) )); then
+                echo "❌ Functions coverage (${FUNCTIONS}%) está por debajo del 30% requerido"
+                FAILED=1
+              else
+                echo "✅ Functions coverage: ${FUNCTIONS}% >= 30%"
+              fi
+
+              if (( $(echo "$BRANCHES < 30" | bc -l) )); then
+                echo "❌ Branches coverage (${BRANCHES}%) está por debajo del 30% requerido"
+                FAILED=1
+              else
+                echo "✅ Branches coverage: ${BRANCHES}% >= 30%"
+              fi
+
+              if [ $FAILED -eq 1 ]; then
+                echo ""
+                echo "❌ COVERAGE INSUFICIENTE - Build detenido"
+                echo "⚠️  NO se construirá ni desplegará la imagen Docker"
+                echo "💡 Aumenta el coverage antes de hacer push"
+                exit 1
+              fi
+
+              echo ""
+              echo "✅ Coverage cumple los requisitos mínimos"
+              echo "🚀 Se procederá a construir la imagen Docker"
+            displayName: 'Validate Coverage >= 40%'
+            continueOnError: false
+
           # Publish test results
           - task: PublishTestResults@2
             displayName: 'Publicar resultados de tests'

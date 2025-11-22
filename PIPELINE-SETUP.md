@@ -16,11 +16,15 @@ Este pipeline maneja automáticamente **Producción (main)** y **Desarrollo (dev
 
 ### 🎯 Stages del Pipeline
 
-1. **Validate** - Ejecuta tests y coverage (siempre)
-2. **BuildAndPush** - Construye y sube imagen Docker (solo en push, no en PR)
+1. **Validate** - Ejecuta tests y valida coverage mínimo (siempre)
+   - Ejecuta todos los tests con Jest
+   - Valida que el coverage sea >= 40% (statements y lines)
+   - Valida que el coverage sea >= 30% (functions y branches)
+   - **Si el coverage es bajo, el build se detiene aquí** ❌
+2. **BuildAndPush** - Construye y sube imagen Docker (solo si coverage >= 40%)
    - `main` → `YOUR_USERNAME/devops-project-prod:latest`
    - `dev` → `YOUR_USERNAME/devops-project-dev:dev`
-3. **DeployProduction** - Despliega a Azure (SOLO main)
+3. **DeployProduction** - Despliega a Azure (SOLO main con coverage >= 40%)
 
 ---
 
@@ -284,15 +288,57 @@ az webapp list --output table
 
 ---
 
+## 🛡️ Validación de Coverage
+
+El pipeline **NO construirá ni desplegará** si el coverage está por debajo del mínimo:
+
+### Requisitos Mínimos:
+- ✅ **Statements:** >= 40%
+- ✅ **Lines:** >= 40%
+- ✅ **Functions:** >= 30%
+- ✅ **Branches:** >= 30%
+
+### ¿Qué pasa si el coverage es bajo?
+
+```
+Stage: Validate
+  ✓ Instalar dependencias
+  ✓ Ejecutar tests
+  ❌ Validate Coverage >= 40% (FAILED)
+
+Pipeline detenido ❌
+⚠️  BuildAndPush NO se ejecuta
+⚠️  Deploy NO se ejecuta
+```
+
+### ¿Cómo arreglarlo?
+
+1. **Ver el coverage localmente:**
+   ```bash
+   npm test
+   # Abre: coverage/index.html
+   ```
+
+2. **Añadir más tests** hasta llegar al 40%
+
+3. **Volver a hacer push:**
+   ```bash
+   git add .
+   git commit -m "test: increase coverage to 40%"
+   git push
+   ```
+
+---
+
 ## 📝 Notas Importantes
 
-1. **PRs NO construyen imágenes** - Solo validan código
-2. **Solo push a main/dev construye imágenes** - Después de merge
+1. **PRs NO construyen imágenes** - Solo validan código y coverage
+2. **Solo push a main/dev construye imágenes** - Después de merge (si coverage >= 40%)
 3. **Diferentes imágenes para cada ambiente** - Producción y desarrollo separados
 4. **Solo MAIN despliega a Azure** - La rama dev solo sube imagen a Docker Hub
 5. **Imagen dev disponible en Docker Hub** - Puedes descargarla y ejecutarla localmente
 6. **Variables secretas** - NUNCA las commits al repositorio
-7. **Coverage mínimo** - 40% statements, 30% branches (configurado en jest.config.js)
+7. **Coverage mínimo obligatorio** - 40% statements/lines, 30% functions/branches
 
 ---
 
