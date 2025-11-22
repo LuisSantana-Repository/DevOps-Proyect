@@ -70,13 +70,13 @@ stages:
             displayName: 'Install Node.js $(nodeVersion)'
 
           - script: |
-              echo "📦 Instalando dependencias..."
+              echo "Instalando dependencias..."
               npm ci
             displayName: 'Instalar dependencias'
 
           # Run tests with coverage
           - script: |
-              echo "🧪 Ejecutando pruebas con coverage..."
+              echo "Ejecutando pruebas con coverage..."
               echo "Branch: $(Build.SourceBranch)"
               npx jest --coverage --runInBand --forceExit --detectOpenHandles
             displayName: 'Run Jest Tests'
@@ -92,10 +92,10 @@ stages:
 
           # Validate coverage threshold (40%)
           - script: |
-              echo "📊 Validando coverage mínimo..."
+              echo "Validando coverage mínimo..."
 
               if [ ! -f "coverage/coverage-summary.json" ]; then
-                echo "❌ ERROR: Archivo de coverage no encontrado"
+                echo "ERROR: Archivo de coverage no encontrado"
                 exit 1
               fi
 
@@ -116,44 +116,44 @@ stages:
               FAILED=0
 
               if (( $(echo "$STATEMENTS < 40" | bc -l) )); then
-                echo "❌ Statements coverage (${STATEMENTS}%) está por debajo del 40% requerido"
+                echo "Statements coverage (${STATEMENTS}%) está por debajo del 40% requerido"
                 FAILED=1
               else
-                echo "✅ Statements coverage: ${STATEMENTS}% >= 40%"
+                echo "Statements coverage: ${STATEMENTS}% >= 40%"
               fi
 
               if (( $(echo "$LINES < 40" | bc -l) )); then
-                echo "❌ Lines coverage (${LINES}%) está por debajo del 40% requerido"
+                echo "Lines coverage (${LINES}%) está por debajo del 40% requerido"
                 FAILED=1
               else
-                echo "✅ Lines coverage: ${LINES}% >= 40%"
+                echo "Lines coverage: ${LINES}% >= 40%"
               fi
 
               if (( $(echo "$FUNCTIONS < 30" | bc -l) )); then
-                echo "❌ Functions coverage (${FUNCTIONS}%) está por debajo del 30% requerido"
+                echo "Functions coverage (${FUNCTIONS}%) está por debajo del 30% requerido"
                 FAILED=1
               else
-                echo "✅ Functions coverage: ${FUNCTIONS}% >= 30%"
+                echo "Functions coverage: ${FUNCTIONS}% >= 30%"
               fi
 
               if (( $(echo "$BRANCHES < 30" | bc -l) )); then
-                echo "❌ Branches coverage (${BRANCHES}%) está por debajo del 30% requerido"
+                echo "Branches coverage (${BRANCHES}%) está por debajo del 30% requerido"
                 FAILED=1
               else
-                echo "✅ Branches coverage: ${BRANCHES}% >= 30%"
+                echo "Branches coverage: ${BRANCHES}% >= 30%"
               fi
 
               if [ $FAILED -eq 1 ]; then
                 echo ""
-                echo "❌ COVERAGE INSUFICIENTE - Build detenido"
-                echo "⚠️  NO se construirá ni desplegará la imagen Docker"
-                echo "💡 Aumenta el coverage antes de hacer push"
+                echo "COVERAGE INSUFICIENTE - Build detenido"
+                echo "NO se construirá ni desplegará la imagen Docker"
+                echo "Aumenta el coverage antes de hacer push"
                 exit 1
               fi
 
               echo ""
-              echo "✅ Coverage cumple los requisitos mínimos"
-              echo "🚀 Se procederá a construir la imagen Docker"
+              echo "Coverage cumple los requisitos mínimos"
+              echo "Se procederá a construir la imagen Docker"
             displayName: 'Validate Coverage >= 40%'
             continueOnError: false
 
@@ -212,7 +212,7 @@ stages:
           - checkout: self
 
           - task: Docker@2
-            displayName: '🚀 Build and Push PRODUCTION image'
+            displayName: 'Build and Push PRODUCTION image'
             inputs:
               command: buildAndPush
               containerRegistry: '$(dockerConnection)'
@@ -224,7 +224,7 @@ stages:
                 production
 
           - script: |
-              echo "✅ Production image built successfully!"
+              echo "Production image built successfully!"
               echo "Image: $(productionImageName):$(tag)"
               echo "Image: $(productionImageName):latest"
             displayName: 'Production build summary'
@@ -237,7 +237,7 @@ stages:
           - checkout: self
 
           - task: Docker@2
-            displayName: '🔧 Build and Push DEVELOPMENT image'
+            displayName: 'Build and Push DEVELOPMENT image'
             inputs:
               command: buildAndPush
               containerRegistry: '$(dockerConnection)'
@@ -249,7 +249,7 @@ stages:
                 latest-dev
 
           - script: |
-              echo "✅ Development image built successfully!"
+              echo "Development image built successfully!"
               echo "Image: $(developmentImageName):$(tag)"
               echo "Image: $(developmentImageName):dev"
             displayName: 'Development build summary'
@@ -274,7 +274,7 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
-                echo "🚀 Configurando Web App de PRODUCCIÓN..."
+                echo "Configurando Web App de PRODUCCIÓN..."
                 echo "Resource Group: $(prodResourceGroup)"
                 echo "Web App: $(prodWebAppName)"
                 echo "Image: $(productionImageName):latest"
@@ -301,20 +301,10 @@ stages:
                     NODE_ENV="production" \
                     PORT="8080"
 
-                echo "🔄 Reiniciando Web App..."
+                echo "Reiniciando Web App..."
                 az webapp restart \
                   --resource-group $(prodResourceGroup) \
                   --name $(prodWebAppName)
 
-                echo "✅ DEPLOY DE PRODUCCIÓN COMPLETADO"
+                echo "DEPLOY DE PRODUCCIÓN COMPLETADO"
                 echo "URL: https://$(prodWebAppName).azurewebsites.net"
-
-# ============================================================
-# NOTA: Deploy de Development DESHABILITADO
-# ============================================================
-# La imagen de desarrollo se construye y sube a Docker Hub,
-# pero NO se despliega automáticamente a Azure para ahorrar recursos.
-#
-# Si quieres desplegar dev manualmente:
-# docker pull YOUR_USERNAME/devops-project-dev:dev
-# docker run -p 3000:3000 YOUR_USERNAME/devops-project-dev:dev
