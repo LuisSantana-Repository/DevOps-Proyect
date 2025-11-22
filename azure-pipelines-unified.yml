@@ -1,0 +1,306 @@
+# ============================================================
+# UNIFIED PIPELINE - Production (main) & Development (dev)
+# ============================================================
+
+pr:
+  branches:
+    include:
+      - main
+      - dev
+
+trigger:
+  branches:
+    include:
+      - main
+      - dev
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - name: tag
+    value: '$(Build.BuildId)'
+  - name: nodeVersion
+    value: '20.x'
+
+  # Docker Configuration - Change these values
+  - name: dockerConnection
+    value: 'Docker'  # Your Docker Hub service connection name
+
+  # Production Image (for main branch)
+  - name: productionImageName
+    value: 'YOUR_DOCKERHUB_USERNAME/devops-project-prod'  # ← CHANGE THIS
+
+  # Development Image (for dev branch)
+  - name: developmentImageName
+    value: 'YOUR_DOCKERHUB_USERNAME/devops-project-dev'   # ← CHANGE THIS
+
+  # Azure Configuration (optional - for deployment)
+  - name: azureServiceConnection
+    value: 'Azure'  # Your Azure service connection name
+
+  # Production Azure Resources
+  - name: prodResourceGroup
+    value: 'rg-devops-prod'           # ← CHANGE THIS
+  - name: prodWebAppName
+    value: 'webapp-devops-prod'       # ← CHANGE THIS
+  - name: prodLocation
+    value: 'westus'
+
+  # Development Azure Resources
+  - name: devResourceGroup
+    value: 'rg-devops-dev'            # ← CHANGE THIS
+  - name: devWebAppName
+    value: 'webapp-devops-dev'        # ← CHANGE THIS
+  - name: devLocation
+    value: 'westus'
+
+  # MongoDB Atlas Configuration (set these as secret variables in Azure DevOps)
+  # MONGODB_URI, DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_OPTIONS, TOKEN_KEY
+
+# ============================================================
+# STAGE 1: VALIDATE - Run Tests & Coverage
+# ============================================================
+
+stages:
+  - stage: Validate
+    displayName: 'Validar y ejecutar pruebas'
+    jobs:
+      - job: Test
+        displayName: 'Ejecutar pruebas y verificar coverage'
+        steps:
+          - checkout: self
+            persistCredentials: true
+
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '$(nodeVersion)'
+            displayName: 'Install Node.js $(nodeVersion)'
+
+          - script: |
+              echo "📦 Instalando dependencias..."
+              npm ci
+            displayName: 'Instalar dependencias'
+
+          # Run tests with coverage
+          - script: |
+              echo "🧪 Ejecutando pruebas con coverage..."
+              echo "Branch: $(Build.SourceBranch)"
+              npx jest --coverage --runInBand --forceExit --detectOpenHandles
+            displayName: 'Run Jest Tests'
+            env:
+              MONGODB_URI: $(MONGODB_URI)
+              DB_USER: $(DB_USER)
+              DB_PASSWORD: $(DB_PASSWORD)
+              DB_HOST: $(DB_HOST)
+              DB_NAME: $(DB_NAME)
+              DB_OPTIONS: $(DB_OPTIONS)
+              TOKEN_KEY: $(TOKEN_KEY)
+              NODE_ENV: test
+
+          # Publish test results
+          - task: PublishTestResults@2
+            displayName: 'Publicar resultados de tests'
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: 'test-results/jest-junit.xml'
+              failTaskOnFailedTests: true
+              testRunTitle: 'Jest Tests - $(Build.SourceBranchName) - Build $(Build.BuildId)'
+            condition: succeededOrFailed()
+
+          # Publish code coverage
+          - task: PublishCodeCoverageResults@2
+            displayName: 'Publicar coverage'
+            inputs:
+              codeCoverageTool: 'Cobertura'
+              summaryFileLocation: 'coverage/cobertura-coverage.xml'
+              reportDirectory: 'coverage/lcov-report'
+            condition: succeededOrFailed()
+
+          # Publish coverage artifacts
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publicar coverage completo'
+            inputs:
+              PathtoPublish: 'coverage'
+              ArtifactName: 'coverage-report'
+              publishLocation: 'Container'
+            condition: succeededOrFailed()
+
+          # Publish junit artifacts
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publicar junit report'
+            inputs:
+              PathtoPublish: 'test-results'
+              ArtifactName: 'jest-junit'
+              publishLocation: 'Container'
+            condition: succeededOrFailed()
+
+# ============================================================
+# STAGE 2: BUILD & PUSH - Different images for main/dev
+# ============================================================
+
+  - stage: BuildAndPush
+    dependsOn: Validate
+    displayName: 'Build & Push Docker Image'
+    # Only run for commits to main or dev (not PRs)
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - job: BuildProduction
+        displayName: 'Build & Push PRODUCTION Image'
+        # Only run for main branch
+        condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+        steps:
+          - checkout: self
+
+          - task: Docker@2
+            displayName: '🚀 Build and Push PRODUCTION image'
+            inputs:
+              command: buildAndPush
+              containerRegistry: '$(dockerConnection)'
+              repository: '$(productionImageName)'
+              Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+              tags: |
+                $(tag)
+                latest
+                production
+
+          - script: |
+              echo "✅ Production image built successfully!"
+              echo "Image: $(productionImageName):$(tag)"
+              echo "Image: $(productionImageName):latest"
+            displayName: 'Production build summary'
+
+      - job: BuildDevelopment
+        displayName: 'Build & Push DEVELOPMENT Image'
+        # Only run for dev branch
+        condition: eq(variables['Build.SourceBranch'], 'refs/heads/dev')
+        steps:
+          - checkout: self
+
+          - task: Docker@2
+            displayName: '🔧 Build and Push DEVELOPMENT image'
+            inputs:
+              command: buildAndPush
+              containerRegistry: '$(dockerConnection)'
+              repository: '$(developmentImageName)'
+              Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+              tags: |
+                $(tag)
+                dev
+                latest-dev
+
+          - script: |
+              echo "✅ Development image built successfully!"
+              echo "Image: $(developmentImageName):$(tag)"
+              echo "Image: $(developmentImageName):dev"
+            displayName: 'Development build summary'
+
+# ============================================================
+# STAGE 3: DEPLOY - Deploy to Azure (Production)
+# ============================================================
+
+  - stage: DeployProduction
+    dependsOn: BuildAndPush
+    displayName: 'Deploy to Azure - PRODUCTION'
+    # Only deploy production from main branch
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: Deploy
+        displayName: 'Deploy Production Docker image to Azure'
+        steps:
+          - task: AzureCLI@2
+            displayName: 'Configure Production Web App'
+            inputs:
+              azureSubscription: '$(azureServiceConnection)'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                echo "🚀 Configurando Web App de PRODUCCIÓN..."
+                echo "Resource Group: $(prodResourceGroup)"
+                echo "Web App: $(prodWebAppName)"
+                echo "Image: $(productionImageName):latest"
+
+                # Set container configuration
+                az webapp config container set \
+                  --resource-group $(prodResourceGroup) \
+                  --name $(prodWebAppName) \
+                  --docker-custom-image-name $(productionImageName):latest \
+                  --docker-registry-server-url https://index.docker.io/v1/
+
+                # Configure environment variables
+                az webapp config appsettings set \
+                  --resource-group $(prodResourceGroup) \
+                  --name $(prodWebAppName) \
+                  --settings \
+                    MONGODB_URI="$(MONGODB_URI)" \
+                    DB_USER="$(DB_USER)" \
+                    DB_PASSWORD="$(DB_PASSWORD)" \
+                    DB_HOST="$(DB_HOST)" \
+                    DB_NAME="$(DB_NAME)" \
+                    DB_OPTIONS="$(DB_OPTIONS)" \
+                    TOKEN_KEY="$(TOKEN_KEY)" \
+                    NODE_ENV="production" \
+                    PORT="8080"
+
+                echo "🔄 Reiniciando Web App..."
+                az webapp restart \
+                  --resource-group $(prodResourceGroup) \
+                  --name $(prodWebAppName)
+
+                echo "✅ DEPLOY DE PRODUCCIÓN COMPLETADO"
+                echo "URL: https://$(prodWebAppName).azurewebsites.net"
+
+# ============================================================
+# STAGE 4: DEPLOY - Deploy to Azure (Development) - OPTIONAL
+# ============================================================
+
+  - stage: DeployDevelopment
+    dependsOn: BuildAndPush
+    displayName: 'Deploy to Azure - DEVELOPMENT'
+    # Only deploy development from dev branch
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
+    jobs:
+      - job: Deploy
+        displayName: 'Deploy Development Docker image to Azure'
+        steps:
+          - task: AzureCLI@2
+            displayName: 'Configure Development Web App'
+            inputs:
+              azureSubscription: '$(azureServiceConnection)'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                echo "🔧 Configurando Web App de DESARROLLO..."
+                echo "Resource Group: $(devResourceGroup)"
+                echo "Web App: $(devWebAppName)"
+                echo "Image: $(developmentImageName):dev"
+
+                # Set container configuration
+                az webapp config container set \
+                  --resource-group $(devResourceGroup) \
+                  --name $(devWebAppName) \
+                  --docker-custom-image-name $(developmentImageName):dev \
+                  --docker-registry-server-url https://index.docker.io/v1/
+
+                # Configure environment variables
+                az webapp config appsettings set \
+                  --resource-group $(devResourceGroup) \
+                  --name $(devWebAppName) \
+                  --settings \
+                    MONGODB_URI="$(MONGODB_URI)" \
+                    DB_USER="$(DB_USER)" \
+                    DB_PASSWORD="$(DB_PASSWORD)" \
+                    DB_HOST="$(DB_HOST)" \
+                    DB_NAME="$(DB_NAME)" \
+                    DB_OPTIONS="$(DB_OPTIONS)" \
+                    TOKEN_KEY="$(TOKEN_KEY)" \
+                    NODE_ENV="development" \
+                    PORT="8080"
+
+                echo "🔄 Reiniciando Web App..."
+                az webapp restart \
+                  --resource-group $(devResourceGroup) \
+                  --name $(devWebAppName)
+
+                echo "✅ DEPLOY DE DESARROLLO COMPLETADO"
+                echo "URL: https://$(devWebAppName).azurewebsites.net"
