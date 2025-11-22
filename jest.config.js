@@ -5,7 +5,7 @@ module.exports = {
   // Coverage configuration
   collectCoverage: true,
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'cobertura', 'lcov', 'html', 'json'],
+  coverageReporters: ['text', 'cobertura', 'lcov', 'html', 'json', 'json-summary'],
   
   // Collect coverage from these files
   collectCoverageFrom: [
