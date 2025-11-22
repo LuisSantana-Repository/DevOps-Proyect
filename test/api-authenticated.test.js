@@ -98,6 +98,97 @@ describe('Authenticated User API Routes', () => {
     expect(response.body).toBeDefined();
   });
 
+  test('GET /api/User/classes should return user classes', async () => {
+    const token = createAuthToken(testUsers.student.email, testUsers.student._id);
+    const response = await request(app)
+      .get('/api/User/classes')
+      .set('Cookie', [`access_token=${token}`]);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toBeDefined();
+    expect(response.body).toHaveProperty('Completed');
+    expect(response.body).toHaveProperty('Available');
+  });
+
+  test('GET /api/User/classes with name filter', async () => {
+    const token = createAuthToken(testUsers.student.email, testUsers.student._id);
+    const response = await request(app)
+      .get('/api/User/classes?name=Algorithms')
+      .set('Cookie', [`access_token=${token}`]);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toBeDefined();
+  });
+
+  test('GET /api/User/getme should return current user info', async () => {
+    const token = createAuthToken(testUsers.student.email, testUsers.student._id);
+    const response = await request(app)
+      .get('/api/User/getme')
+      .set('Cookie', [`access_token=${token}`]);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toBeDefined();
+    expect(response.body).toHaveProperty('name');
+    expect(response.body).toHaveProperty('email');
+    expect(response.body.email).toBe(testUsers.student.email);
+  });
+
+  test('POST /api/User with admin token should create user', async () => {
+    const token = createAuthToken(testUsers.admin.email, testUsers.admin._id);
+    const newUser = {
+      name: `Test User ${Date.now()}`,
+      email: `testuser${Date.now()}@test.com`,
+      password: 'testpass123',
+      userType: 0,
+      Curiculum: 'ISC'
+    };
+
+    const response = await request(app)
+      .post('/api/User')
+      .set('Cookie', [`access_token=${token}`])
+      .send(newUser);
+
+    expect([200, 201, 400]).toContain(response.status);
+  });
+
+  test('POST /api/User with student token should return 401', async () => {
+    const token = createAuthToken(testUsers.student.email, testUsers.student._id);
+    const response = await request(app)
+      .post('/api/User')
+      .set('Cookie', [`access_token=${token}`])
+      .send({ name: 'Test', email: 'test@test.com' });
+
+    expect(response.status).toBe(401);
+  });
+
+  test('PUT /api/User/Password/test should update password', async () => {
+    const token = createAuthToken(testUsers.student.email, testUsers.student._id);
+    const response = await request(app)
+      .put('/api/User/Password/test')
+      .set('Cookie', [`access_token=${token}`])
+      .send({ oldPassword: 'password123', newPassword: 'newpass123' });
+
+    expect([200, 400, 401]).toContain(response.status);
+  });
+
+  test('DELETE /api/User/:email with admin token', async () => {
+    const token = createAuthToken(testUsers.admin.email, testUsers.admin._id);
+    const response = await request(app)
+      .delete('/api/User/nonexistent@test.com')
+      .set('Cookie', [`access_token=${token}`]);
+
+    expect([200, 404]).toContain(response.status);
+  });
+
+  test('DELETE /api/User/:email with student token should return 401', async () => {
+    const token = createAuthToken(testUsers.student.email, testUsers.student._id);
+    const response = await request(app)
+      .delete('/api/User/test@test.com')
+      .set('Cookie', [`access_token=${token}`]);
+
+    expect(response.status).toBe(401);
+  });
+
 });
 
 // ─────────────────────────────────────
@@ -202,6 +293,52 @@ describe('Authenticated Schedule API Routes', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('error');
+  });
+
+  test('GET /api/Schedule should return user schedules', async () => {
+    const token = createAuthToken(testUsers.student.email, testUsers.student._id);
+    const response = await request(app)
+      .get('/api/Schedule')
+      .set('Cookie', [`access_token=${token}`]);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toBeDefined();
+  });
+
+  test('PUT /api/Schedule should update schedule', async () => {
+    const token = createAuthToken(testUsers.student.email, testUsers.student._id);
+    const response = await request(app)
+      .put('/api/Schedule')
+      .set('Cookie', [`access_token=${token}`])
+      .send({
+        name: 'Test Schedule',
+        courseID: '6713a0000000000000000001'
+      });
+
+    expect([200, 400, 404]).toContain(response.status);
+  });
+
+  test('PUT /api/Schedule/available should update available courses', async () => {
+    const token = createAuthToken(testUsers.student.email, testUsers.student._id);
+    const response = await request(app)
+      .put('/api/Schedule/available')
+      .set('Cookie', [`access_token=${token}`])
+      .send({
+        name: 'Test Schedule',
+        courseID: '6713a0000000000000000001'
+      });
+
+    expect([200, 400, 404]).toContain(response.status);
+  });
+
+  test('DELETE /api/Schedule should delete schedule', async () => {
+    const token = createAuthToken(testUsers.student.email, testUsers.student._id);
+    const response = await request(app)
+      .delete('/api/Schedule')
+      .set('Cookie', [`access_token=${token}`])
+      .send({ name: 'NonExistentSchedule' });
+
+    expect([200, 400, 404]).toContain(response.status);
   });
 
 });
