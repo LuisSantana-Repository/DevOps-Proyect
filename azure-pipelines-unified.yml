@@ -35,24 +35,16 @@ variables:
   - name: developmentImageName
     value: 'YOUR_DOCKERHUB_USERNAME/devops-project-dev'   # ← CHANGE THIS
 
-  # Azure Configuration (optional - for deployment)
+  # Azure Configuration (solo para PRODUCCIÓN - main branch)
   - name: azureServiceConnection
     value: 'Azure'  # Your Azure service connection name
 
-  # Production Azure Resources
+  # Production Azure Resources (solo main branch se despliega aquí)
   - name: prodResourceGroup
     value: 'rg-devops-prod'           # ← CHANGE THIS
   - name: prodWebAppName
     value: 'webapp-devops-prod'       # ← CHANGE THIS
   - name: prodLocation
-    value: 'westus'
-
-  # Development Azure Resources
-  - name: devResourceGroup
-    value: 'rg-devops-dev'            # ← CHANGE THIS
-  - name: devWebAppName
-    value: 'webapp-devops-dev'        # ← CHANGE THIS
-  - name: devLocation
     value: 'westus'
 
   # MongoDB Atlas Configuration (set these as secret variables in Azure DevOps)
@@ -196,13 +188,13 @@ stages:
             displayName: 'Development build summary'
 
 # ============================================================
-# STAGE 3: DEPLOY - Deploy to Azure (Production)
+# STAGE 3: DEPLOY - Deploy to Azure (SOLO PRODUCCIÓN - main)
 # ============================================================
 
   - stage: DeployProduction
     dependsOn: BuildAndPush
     displayName: 'Deploy to Azure - PRODUCTION'
-    # Only deploy production from main branch
+    # Solo deploy producción desde main branch
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     jobs:
       - job: Deploy
@@ -251,56 +243,11 @@ stages:
                 echo "URL: https://$(prodWebAppName).azurewebsites.net"
 
 # ============================================================
-# STAGE 4: DEPLOY - Deploy to Azure (Development) - OPTIONAL
+# NOTA: Deploy de Development DESHABILITADO
 # ============================================================
-
-  - stage: DeployDevelopment
-    dependsOn: BuildAndPush
-    displayName: 'Deploy to Azure - DEVELOPMENT'
-    # Only deploy development from dev branch
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
-    jobs:
-      - job: Deploy
-        displayName: 'Deploy Development Docker image to Azure'
-        steps:
-          - task: AzureCLI@2
-            displayName: 'Configure Development Web App'
-            inputs:
-              azureSubscription: '$(azureServiceConnection)'
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                echo "🔧 Configurando Web App de DESARROLLO..."
-                echo "Resource Group: $(devResourceGroup)"
-                echo "Web App: $(devWebAppName)"
-                echo "Image: $(developmentImageName):dev"
-
-                # Set container configuration
-                az webapp config container set \
-                  --resource-group $(devResourceGroup) \
-                  --name $(devWebAppName) \
-                  --docker-custom-image-name $(developmentImageName):dev \
-                  --docker-registry-server-url https://index.docker.io/v1/
-
-                # Configure environment variables
-                az webapp config appsettings set \
-                  --resource-group $(devResourceGroup) \
-                  --name $(devWebAppName) \
-                  --settings \
-                    MONGODB_URI="$(MONGODB_URI)" \
-                    DB_USER="$(DB_USER)" \
-                    DB_PASSWORD="$(DB_PASSWORD)" \
-                    DB_HOST="$(DB_HOST)" \
-                    DB_NAME="$(DB_NAME)" \
-                    DB_OPTIONS="$(DB_OPTIONS)" \
-                    TOKEN_KEY="$(TOKEN_KEY)" \
-                    NODE_ENV="development" \
-                    PORT="8080"
-
-                echo "🔄 Reiniciando Web App..."
-                az webapp restart \
-                  --resource-group $(devResourceGroup) \
-                  --name $(devWebAppName)
-
-                echo "✅ DEPLOY DE DESARROLLO COMPLETADO"
-                echo "URL: https://$(devWebAppName).azurewebsites.net"
+# La imagen de desarrollo se construye y sube a Docker Hub,
+# pero NO se despliega automáticamente a Azure para ahorrar recursos.
+#
+# Si quieres desplegar dev manualmente:
+# docker pull YOUR_USERNAME/devops-project-dev:dev
+# docker run -p 3000:3000 YOUR_USERNAME/devops-project-dev:dev

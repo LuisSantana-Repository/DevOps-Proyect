@@ -20,8 +20,7 @@ Este pipeline maneja automáticamente **Producción (main)** y **Desarrollo (dev
 2. **BuildAndPush** - Construye y sube imagen Docker (solo en push, no en PR)
    - `main` → `YOUR_USERNAME/devops-project-prod:latest`
    - `dev` → `YOUR_USERNAME/devops-project-dev:dev`
-3. **DeployProduction** - Despliega a Azure (solo main)
-4. **DeployDevelopment** - Despliega a Azure (solo dev)
+3. **DeployProduction** - Despliega a Azure (SOLO main)
 
 ---
 
@@ -90,48 +89,44 @@ Agrega estas variables como **secretas** (🔒):
 | `DB_OPTIONS` | `retryWrites=true&w=majority` | ✗ |
 | `TOKEN_KEY` | Tu secret key para JWT | ✓ |
 
-### **Paso 4: Crear/Configurar Azure Resources (Opcional - para deploy)**
+### **Paso 4: Crear/Configurar Azure Resources (Solo para Producción)**
 
-#### Para Producción:
+**NOTA:** Solo creamos recursos de Azure para **Producción**. La imagen de desarrollo se sube a Docker Hub pero NO se despliega a Azure automáticamente.
+
+#### Crear recursos de Producción:
 
 ```bash
-# Crear resource group
+# 1. Crear resource group
 az group create --name rg-devops-prod --location westus
 
-# Crear App Service Plan
+# 2. Crear App Service Plan (Linux, B1 tier)
 az appservice plan create \
   --name plan-devops-prod \
   --resource-group rg-devops-prod \
   --is-linux \
   --sku B1
 
-# Crear Web App
+# 3. Crear Web App
 az webapp create \
   --name webapp-devops-prod \
   --resource-group rg-devops-prod \
   --plan plan-devops-prod \
   --deployment-container-image-name YOUR_USERNAME/devops-project-prod:latest
+
+# 4. Verificar que se creó correctamente
+az webapp show --name webapp-devops-prod --resource-group rg-devops-prod --output table
 ```
 
-#### Para Desarrollo:
+#### Para probar la imagen de Desarrollo localmente:
 
 ```bash
-# Crear resource group
-az group create --name rg-devops-dev --location westus
+# Descargar la imagen de desarrollo desde Docker Hub
+docker pull YOUR_USERNAME/devops-project-dev:dev
 
-# Crear App Service Plan
-az appservice plan create \
-  --name plan-devops-dev \
-  --resource-group rg-devops-dev \
-  --is-linux \
-  --sku B1
-
-# Crear Web App
-az webapp create \
-  --name webapp-devops-dev \
-  --resource-group rg-devops-dev \
-  --plan plan-devops-dev \
-  --deployment-container-image-name YOUR_USERNAME/devops-project-dev:dev
+# Ejecutar localmente
+docker run -p 3000:3000 \
+  -e MONGODB_URI="your_mongodb_uri" \
+  YOUR_USERNAME/devops-project-dev:dev
 ```
 
 ### **Paso 5: Configurar el Pipeline en Azure DevOps**
@@ -208,7 +203,8 @@ git pull origin dev
 │  Push a dev                                     │
 │  ✓ Validate (tests + coverage)                 │
 │  ✓ BuildAndPush → devops-project-dev:dev       │
-│  ✓ DeployDevelopment → Azure Dev               │
+│  ✗ Deploy (NO se despliega a Azure)            │
+│  💡 Imagen disponible en Docker Hub             │
 └─────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────┐
@@ -293,18 +289,21 @@ az webapp list --output table
 1. **PRs NO construyen imágenes** - Solo validan código
 2. **Solo push a main/dev construye imágenes** - Después de merge
 3. **Diferentes imágenes para cada ambiente** - Producción y desarrollo separados
-4. **Variables secretas** - NUNCA las commits al repositorio
-5. **Coverage mínimo** - 40% statements, 30% branches (configurado en jest.config.js)
+4. **Solo MAIN despliega a Azure** - La rama dev solo sube imagen a Docker Hub
+5. **Imagen dev disponible en Docker Hub** - Puedes descargarla y ejecutarla localmente
+6. **Variables secretas** - NUNCA las commits al repositorio
+7. **Coverage mínimo** - 40% statements, 30% branches (configurado en jest.config.js)
 
 ---
 
 ## ✅ Checklist de Setup
 
-- [ ] Edité `azure-pipelines-unified.yml` con mis nombres de imagen
+- [ ] Edité `azure-pipelines-unified.yml` con mis nombres de imagen Docker
 - [ ] Configuré Docker Hub service connection en Azure DevOps
-- [ ] Configuré Azure service connection (si voy a desplegar)
+- [ ] Configuré Azure service connection (solo para deploy de producción)
 - [ ] Agregué variables secretas (MONGODB_URI, DB_PASSWORD, TOKEN_KEY, etc.)
-- [ ] Creé los resource groups en Azure (si voy a desplegar)
-- [ ] Creé las web apps en Azure (si voy a desplegar)
+- [ ] Creé el resource group de PRODUCCIÓN en Azure (rg-devops-prod)
+- [ ] Creé la web app de PRODUCCIÓN en Azure (webapp-devops-prod)
 - [ ] Configuré el pipeline en Azure DevOps
 - [ ] Hice un PR de prueba para verificar que funciona
+- [ ] Verifiqué que la imagen dev se sube a Docker Hub (sin deploy a Azure)
