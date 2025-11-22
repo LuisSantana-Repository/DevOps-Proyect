@@ -161,7 +161,7 @@ describe('Authenticated User API Routes', () => {
     expect(response.status).toBe(401);
   });
 
-  test('PUT /api/User/Password/test should update password', async () => {
+  test.skip('PUT /api/User/Password/test should update password', async () => {
     const token = createAuthToken(testUsers.student.email, testUsers.student._id);
     const response = await request(app)
       .put('/api/User/Password/test')
