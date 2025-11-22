@@ -1,0 +1,20 @@
+[
+  {
+    "_id": { "$oid": "6713a0000000000000000201" },
+    "professorName": "Dr. Smith",
+    "classroomID": { "$oid": "6713a0000000000000000101" },
+    "classID": { "$oid": "6713a0000000000000000001" },
+    "studentCount": 35,
+    "days": ["Mon", "Wed"],
+    "time": ["10:00", "11:15"]
+  },
+  {
+    "_id": { "$oid": "6713a0000000000000000202" },
+    "professorName": "Dr. Lee",
+    "classroomID": { "$oid": "6713a0000000000000000102" },
+    "classID": { "$oid": "6713a0000000000000000003" },
+    "studentCount": 28,
+    "days": ["Tue", "Thu"],
+    "time": ["09:00", "10:15"]
+  }
+]

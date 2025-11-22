@@ -1,0 +1,60 @@
+name: uni-app
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-example}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE:-app}
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "mongodb://root:example@localhost:27017/admin", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  seed:
+    image: node:20-alpine
+    container_name: mongo-seed
+    depends_on:
+      mongo:
+        condition: service_healthy
+    working_dir: /seed
+    volumes:
+      - ./seed:/seed                 # RW
+      - ./db/seeds:/seed/seeds:ro    # JSONs
+      - seed_node_modules:/seed/node_modules
+    environment:
+      MONGO_URI: ${MONGO_URI:-mongodb://root:example@mongo:27017}
+      MONGO_DB: ${MONGO_INITDB_DATABASE:-app}
+    command: ["sh", "-lc", "npm --yes add mongodb && node /seed/seed.mjs"]
+    restart: "no"
+
+  app:
+    build:
+      context: .
+    container_name: node-app
+    depends_on:
+      mongo:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    environment:
+      # La app debe leer esta URI (ajústalo al nombre que espere tu server: MONGO_URI, DB_URI, etc.)
+      MONGO_URI: ${MONGO_URI:-mongodb://root:example@mongo:27017/app?authSource=admin}
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3000}
+    ports:
+      - "${PORT:-3000}:3000"
+    # Si el package.json usa "start", esto basta; si requiere build TS, ver notas
+    command: [ "npm", "start" ]
+
+volumes:
+  mongo_data:
+  seed_node_modules:
+

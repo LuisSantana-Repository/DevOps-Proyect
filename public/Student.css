@@ -1,0 +1,54 @@
+body {
+    background-color: #f0f4f8; 
+    color: #333; 
+    font-family: 'Arial', sans-serif;
+}
+
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #e7eff9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+h1, h5 {
+    text-align: center;
+    color: #2c3e50;
+}
+
+.list-group-item {
+    border-radius: 0.25rem;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    background-color: #f8faff; 
+}
+
+.list-group-item-primary {
+    background-color: rgb(212, 237, 218);
+}
+
+.list-group-item-warning {
+    background-color: #f1ffcc; 
+}
+
+.bg-secondary {
+    background-color: #d6e4f0; /* Soft grey-blue, for unavailable classes */
+}
+
+.btn-primary {
+    background-color: #3498db; /* Vivid blue */
+    border-color: #3498db;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+button {
+    width: 100%;
+    margin-top: 10px;
+}
+

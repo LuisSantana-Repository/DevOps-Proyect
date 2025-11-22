@@ -1,0 +1,90 @@
+.navbar {
+    background-color: rgba(67, 96, 181, 0.8); 
+    transition: background-color 0.4s;
+}
+
+.navbar:hover {
+    background-color: rgb(67, 101, 181); 
+}
+
+
+body {
+    font-family: 'Arial', sans-serif; 
+}
+
+.bi {
+    font-size: 1.5rem; 
+}
+
+main {
+    background-color: #f0f0f0; 
+    padding: 20px; 
+    margin: auto;
+    width: 90%; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.container {
+    display: flex; 
+    align-items: center; 
+    gap: 20px;
+}
+
+.card {
+    background-color: #c9c9c9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    border-radius: 10px;
+    margin: 20px; 
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: scale(1.03); 
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+
+
+
+.modal-content {
+    border-radius: 15px;
+}
+
+.modal-header, .modal-body, .modal-footer {
+    padding: 20px; 
+}
+
+footer {
+    background-color: #343a40; 
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+}
+
+footer a {
+    color: #f8f9fa;
+    text-decoration: none;
+}
+
+body {
+    background-color: #f4f4f4; 
+    color: #333;
+}
+
+a {
+    color: inherit; 
+    text-decoration: none; 
+    background-color: transparent;
+}
+
+a:hover, a:focus, a:active {
+    color: inherit;
+    text-decoration: none; 
+    background-color: transparent; 
+    outline: none;
+}
+
+.swal2-container {
+    z-index: 1060 !important; 
+  }
+  

@@ -1,0 +1,39 @@
+body {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://iteso.blob.core.windows.net/images/f3.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 100%;
+    font-family: 'Numans', sans-serif;
+}
+.card {
+    height: 370px;
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 400px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px; 
+}
+
+.card-header h3 {
+    color: #34568B; 
+    font-size: 24px;
+}
+
+input[type=email], input[type=password] {
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+button[type=submit] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button[type=submit]:hover {
+    background-color: #45a049; 
+}

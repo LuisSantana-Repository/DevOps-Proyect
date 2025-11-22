@@ -1,0 +1,14 @@
+[
+  {
+    "_id": { "$oid": "6713a0000000000000000101" },
+    "maxStudents": 40,
+    "building": "Engineering",
+    "number": 201
+  },
+  {
+    "_id": { "$oid": "6713a0000000000000000102" },
+    "maxStudents": 30,
+    "building": "Science",
+    "number": 105
+  }
+]

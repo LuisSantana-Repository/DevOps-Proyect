@@ -1,0 +1,126 @@
+# azure-pipelines-production.yml
+trigger:
+  branches:
+    include:
+    - Production
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+- name: tag
+  value: '$(Build.BuildId)'
+- name: testResultsDir
+  value: '$(System.DefaultWorkingDirectory)/test-results'
+- name: coverageDir
+  value: '$(System.DefaultWorkingDirectory)/coverage'
+
+stages:
+- stage: Test
+  displayName: Run Unit Tests
+  jobs:
+  - job: UnitTests
+    displayName: Execute Tests
+    steps:
+    - task: Docker@2
+      displayName: Build test image
+      inputs:
+        repository: 'test-prod'
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
+        tags: '$(tag)'
+    
+    # Crear directorios para resultados
+    - task: CmdLine@2
+      displayName: Prepare test directories
+      inputs:
+        script: |
+          mkdir -p $(testResultsDir)
+          mkdir -p $(coverageDir)
+    
+    # Ejecutar pruebas dentro del contenedor
+    - task: CmdLine@2
+      displayName: Run tests with coverage
+      inputs:
+        script: |
+          docker run --rm \
+            -v $(testResultsDir):/usr/src/app/test-results \
+            -v $(coverageDir):/usr/src/app/coverage \
+            test-prod:$(tag) \
+            npm test -- --coverage --coverageDirectory=/usr/src/app/coverage
+      continueOnError: false
+    
+    # Publicar resultados de pruebas
+    - task: PublishTestResults@2
+      displayName: Publish test results
+      condition: always()
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '$(testResultsDir)/**/jest-*.xml'
+        mergeTestResults: true
+        failTaskOnFailedTests: true
+        testRunTitle: 'Production Unit Tests - Build $(Build.BuildId)'
+    
+    # Publicar cobertura de código
+    - task: PublishCodeCoverageResults@2
+      displayName: Publish code coverage
+      condition: always()
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: '$(coverageDir)/cobertura-coverage.xml'
+        reportDirectory: '$(coverageDir)'
+        failIfCoverageEmpty: false
+    
+    # Guardar resultados como artefactos
+    - task: PublishBuildArtifacts@1
+      displayName: Save test artifacts
+      condition: always()
+      inputs:
+        PathtoPublish: '$(testResultsDir)'
+        ArtifactName: 'test-results-$(Build.BuildId)'
+        publishLocation: 'Container'
+    
+    - task: PublishBuildArtifacts@1
+      displayName: Save coverage artifacts
+      condition: always()
+      inputs:
+        PathtoPublish: '$(coverageDir)'
+        ArtifactName: 'coverage-$(Build.BuildId)'
+        publishLocation: 'Container'
+
+- stage: Build
+  displayName: Build Production Image
+  dependsOn: Test
+  condition: succeeded()
+  jobs:
+  - job: Build
+    displayName: Build Docker Image
+    steps:
+    - task: Docker@2
+      displayName: Build production image
+      inputs:
+        repository: 'production'
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
+        tags: |
+          $(tag)
+          latest
+
+- stage: Publish
+  displayName: Publish to Registry and Deploy
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: Publish
+    displayName: Push and Deploy
+    steps:
+    - task: Docker@2
+      displayName: Build and push to Docker Hub
+      inputs:
+        containerRegistry: 'DokerRepo'
+        repository: '<NameHere>'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: |
+          $(tag)
+          latest

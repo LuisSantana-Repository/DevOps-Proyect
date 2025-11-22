@@ -1,0 +1,39 @@
+[
+  {
+    "_id": { "$oid": "6713a0000000000000000301" },
+    "name": "Alice Student",
+    "email": "alice@student.edu",
+    "Curiculum": "ISC",
+    "password": "password123",
+    "userType": 0,
+    "Completed": [{ "$oid": "6713a0000000000000000002" }],
+    "Passing": [{ "$oid": "6713a0000000000000000001" }],
+    "Available": [
+      { "$oid": "6713a0000000000000000003" },
+      { "$oid": "6713a0000000000000000004" },
+      { "$oid": "6713a0000000000000000005" }
+    ]
+  },
+  {
+    "_id": { "$oid": "6713a0000000000000000302" },
+    "name": "Bob Professor",
+    "email": "bob@faculty.edu",
+    "Curiculum": "IDC",
+    "password": "password123",
+    "userType": 1,
+    "Completed": [],
+    "Passing": [],
+    "Available": []
+  },
+  {
+    "_id": { "$oid": "6713a0000000000000000303" },
+    "name": "Carol Admin",
+    "email": "carol@admin.edu",
+    "Curiculum": "ISC",
+    "password": "password123",
+    "userType": 2,
+    "Completed": [],
+    "Passing": [],
+    "Available": []
+  }
+]

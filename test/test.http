@@ -1,0 +1,234 @@
+@host = http://localhost:3001
+
+
+###
+
+GET {{host}}/api/User
+x-auth: 23426
+
+###
+
+GET {{host}}/api/User?name=m
+x-auth: 23426
+
+###
+    GET {{host}}/api/User
+
+###
+POST {{host}}/api/User
+Content-Type: application/json
+x-auth: 23423
+
+{
+    "name":"Marta",
+    "email": "marhta1234567@test.com",
+    "password" : "1234",
+    "userType": 2
+}
+###
+
+POST {{host}}/api/login
+Content-Type: application/json
+
+{
+    "email": "marta@test.com",
+    "password" : "1234"
+}
+
+
+###
+
+GET {{host}}/api/User
+
+###
+
+POST {{host}}/api/User
+Content-Type: application/json
+
+{
+    "name":"asdf"
+}
+
+###
+
+PUT {{host}}/api/User/marta@test.com
+x-auth: 23423
+Content-Type: application/json
+
+{
+    "name":"Gemini2",
+    "email":"userasdfdsf2@test.com",
+    "password": "125345",
+    "ClassID": "6626eb356dc239be15258e18"
+}
+###
+
+POST {{host}}/api/login
+Content-Type: application/json
+
+{
+    "email": "marta@test.com",
+    "password" : "125345"
+}
+###
+DELETE {{host}}/api/users/Gemini@google.com
+x-auth: 23423
+
+
+###
+###
+###
+
+DELETE  {{host}}/api/images/test@test.com/soraImg3
+
+### Log In as admin ----------------------------------------------------------------------------------------------------------
+
+POST {{host}}/api/login
+Content-Type: application/json
+
+{
+    "email": "angel@iteso.mx",
+    "password" : "a"
+}
+
+###     Create New User
+
+POST {{host}}/api/User
+Content-Type: application/json
+
+{
+    "name": "pelayoTest",
+    "email": "PTSA2@iteso.mx",
+    "password" : "a",
+    "userType": 0,
+    "Curiculum": "ISC"
+}
+
+### Check the new user exists
+
+GET {{host}}/api/User
+
+
+### Log in as the new user
+
+POST {{host}}/api/login
+Content-Type: application/json
+
+{
+    "email": "PTSA2@iteso.mx",
+    "password" : "a"
+}
+
+### Create a new schedule for the user
+POST {{host}}/api/Schedule
+Content-Type: application/json
+
+{
+    "name": "Horario5"
+}
+
+### View all existing courses
+
+GET {{host}}/api/Course
+
+  
+### Filter courses by class --- Not working as intended
+
+GET {{host}}/api/Course?classID=662c0c66d35471bce3f86731
+
+### Filter courses by professor
+
+GET {{host}}/api/Course?professorName=Paco Memo
+
+
+### Get users schedule names
+
+GET {{host}}/api/Schedule
+
+### Obtain courses that the user can add to their shchedule --- Not working as intended
+
+GET {{host}}/api/Schedule?name=Horario2&classID=662c0c66d35471bce3f86731
+
+
+### Add a course to the user 
+
+PUT {{host}}/api/Schedule
+Content-Type: application/json
+
+{
+    "name": "test34",
+    "_id": "663028eeb21b678199756330"
+}
+
+### Get user schedule
+
+GET {{host}}/api/Schedule?name=test34
+
+### Remove a course from the users schedule
+
+DELETE {{host}}/api/Schedule
+Content-Type: application/json
+
+{
+    "name": "Horario4",
+    "_id":  "663028a7b21b67819975632a"
+}
+
+### Remove a schedule from the user
+
+DELETE {{host}}/api/Schedule
+Content-Type: application/json
+
+{
+    "name": "Horario4"
+}
+
+### Log out (delete cookie)
+
+GET {{host}}/api/login/logout
+
+### 
+
+POST {{host}}/api/Course
+Content-Type: application/json 
+
+{
+    "professorName": "OW player",
+    "classID": "662adcda62f280a6c0c85bf8",
+    "classroomID": "6634fd78b7f31dabbdcdde0c",
+    "days": [
+        "Monday",
+        "Wednesday",
+        "Friday"
+    ],
+    "time": [
+        "13:00-15:00",
+        "13:00-15:00",
+        "13:00-15:00"
+    ],
+    "studentCount": 0
+}
+
+### 
+GET {{host}}/api/Course
+
+###  
+GET {{host}}/api/Class
+
+###
+
+POST {{host}}/api/Classroom
+
+###
+
+DELETE  {{host}}/api/Classroom
+
+###
+
+GET {{host}}/api/Classroom?building=A
+
+
+###
+
+GET {{host}}/api/Class?name=a
+

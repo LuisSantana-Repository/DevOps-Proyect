@@ -1,0 +1,39 @@
+.iteso-logo {
+  max-width: 100%;  
+  height: auto;    
+  width: 200px;     
+}
+
+
+.card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, opacity 0.3s;
+  border-radius: 10px;
+}
+
+.card:hover {
+  transform: scale(1.03); 
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); 
+  opacity: 0.9; 
+}
+
+  
+.container {
+  padding: 16px; 
+}
+
+.modal table {
+  width: 100%; 
+  border-collapse: collapse;
+}
+
+.modal th, .modal td {
+  border: 1px solid #ccc;
+  padding: 8px; 
+  text-align: left;
+}
+
+.modal tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+

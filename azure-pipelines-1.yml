@@ -1,0 +1,200 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+# azure-pipelines-pr.yml
+trigger: none
+
+pr:
+  branches:
+    include:
+    - Production
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+- name: tag
+  value: '$(Build.BuildId)'
+- name: testResultsDir
+  value: '$(System.DefaultWorkingDirectory)/test-results'
+- name: coverageDir
+  value: '$(System.DefaultWorkingDirectory)/coverage'
+- name: minimumCoverage
+  value: 80
+
+stages:
+- stage: PRValidation
+  displayName: Pull Request Validation
+  jobs:
+  - job: TestAndValidate
+    displayName: Tests & Coverage Check
+    steps:
+    - task: Docker@2
+      displayName: Build test image
+      inputs:
+        repository: 'test-pr'
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
+        tags: '$(tag)'
+    
+    - task: CmdLine@2
+      displayName: Prepare test directories
+      inputs:
+        script: |
+          mkdir -p $(testResultsDir)
+          mkdir -p $(coverageDir)
+    
+    # Ejecutar pruebas con cobertura
+    - task: CmdLine@2
+      displayName: Run unit tests with coverage
+      inputs:
+        script: |
+          docker run --rm \
+            -v $(testResultsDir):/usr/src/app/test-results \
+            -v $(coverageDir):/usr/src/app/coverage \
+            test-pr:$(tag) \
+            npm test -- --coverage --coverageDirectory=/usr/src/app/coverage --coverageReporters=text --coverageReporters=cobertura --coverageReporters=lcov
+      continueOnError: false
+    
+    # Publicar resultados de pruebas
+    - task: PublishTestResults@2
+      displayName: Publish test results
+      condition: always()
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '$(testResultsDir)/**/jest-*.xml'
+        mergeTestResults: true
+        failTaskOnFailedTests: true
+        testRunTitle: 'PR Tests - $(System.PullRequest.PullRequestId)'
+    
+    # Publicar cobertura
+    - task: PublishCodeCoverageResults@2
+      displayName: Publish code coverage
+      condition: always()
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: '$(coverageDir)/cobertura-coverage.xml'
+        reportDirectory: '$(coverageDir)'
+        failIfCoverageEmpty: false
+    
+    # Validar umbral de cobertura
+    - task: Bash@3
+      displayName: Validate coverage threshold (80%)
+      inputs:
+        targetType: 'inline'
+        script: |
+          # Extraer el porcentaje de cobertura del archivo cobertura
+          if [ -f "$(coverageDir)/cobertura-coverage.xml" ]; then
+            # Extraer line-rate del XML (cobertura usa valores de 0 a 1)
+            COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' $(coverageDir)/cobertura-coverage.xml | head -1)
+            
+            # Convertir a porcentaje
+            COVERAGE_PERCENT=$(echo "$COVERAGE * 100" | bc)
+            COVERAGE_INT=${COVERAGE_PERCENT%.*}
+            
+            echo "📊 Current coverage: ${COVERAGE_INT}%"
+            echo "📈 Required coverage: $(minimumCoverage)%"
+            
+            if [ "$COVERAGE_INT" -lt "$(minimumCoverage)" ]; then
+              echo "##vso[task.logissue type=error]❌ Code coverage (${COVERAGE_INT}%) is below the required threshold ($(minimumCoverage)%)"
+              echo "##vso[task.complete result=Failed;]Coverage check failed"
+              exit 1
+            else
+              echo "✅ Coverage check passed! (${COVERAGE_INT}% >= $(minimumCoverage)%)"
+              echo "##vso[task.complete result=Succeeded;]Coverage check passed"
+            fi
+          else
+            echo "##vso[task.logissue type=error]Coverage report not found"
+            exit 1
+          fi
+    
+    # Comentar en el PR con los resultados
+    - task: PowerShell@2
+      displayName: Comment PR with coverage results
+      condition: always()
+      inputs:
+        targetType: 'inline'
+        script: |
+          Write-Host "✅ All tests passed and coverage requirements met!"
+          Write-Host "Check the pipeline for detailed results"
+    
+    # Guardar artefactos
+    - task: PublishBuildArtifacts@1
+      displayName: Save PR test artifacts
+      condition: always()
+      inputs:
+        PathtoPublish: '$(testResultsDir)'
+        ArtifactName: 'pr-test-results-$(Build.BuildId)'
+        publishLocation: 'Container'
+    
+    - task: PublishBuildArtifacts@1
+      displayName: Save PR coverage artifacts
+      condition: always()
+      inputs:
+        PathtoPublish: '$(coverageDir)'
+        ArtifactName: 'pr-coverage-$(Build.BuildId)'
+        publishLocation: 'Container'
+
+- stage: BuildValidation
+  displayName: Build Validation
+  dependsOn: PRValidation
+  condition: succeeded()
+  jobs:
+  - job: BuildCheck
+    displayName: Verify Build
+    steps:
+    - task: Docker@2
+      displayName: Test build
+      inputs:
+        repository: 'pr-build-test'
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
+        tags: 'pr-$(Build.BuildId)'
+    
+    - task: CmdLine@2
+      displayName: Build success
+      inputs:
+        script: |
+          echo "✅ Docker build successful"
+          echo "✅ PR ready for review"
+
+
+
+
+# {
+#   "scripts": {
+#     "test": "jest --ci --reporters=default --reporters=jest-junit"
+#   },
+#   "jest": {
+#     "testEnvironment": "node",
+#     "coverageReporters": ["text", "cobertura", "lcov", "html"],
+#     "coverageDirectory": "coverage",
+#     "collectCoverageFrom": [
+#       "src/**/*.{js,jsx,ts,tsx}",
+#       "!src/**/*.test.{js,jsx,ts,tsx}",
+#       "!src/**/__tests__/**"
+#     ],
+#     "coverageThreshold": {
+#       "global": {
+#         "branches": 80,
+#         "functions": 80,
+#         "lines": 80,
+#         "statements": 80
+#       }
+#     }
+#   },
+#   "jest-junit": {
+#     "outputDirectory": "test-results",
+#     "outputName": "jest-junit.xml",
+#     "classNameTemplate": "{classname}",
+#     "titleTemplate": "{title}",
+#     "ancestorSeparator": " › ",
+#     "usePathForSuiteName": "true"
+#   },
+#   "devDependencies": {
+#     "jest": "^29.0.0",
+#     "jest-junit": "^16.0.0"
+#   }
+# }

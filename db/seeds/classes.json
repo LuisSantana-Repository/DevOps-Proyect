@@ -1,0 +1,37 @@
+[
+  {
+    "_id": { "$oid": "6713a0000000000000000001" },
+    "name": "Algorithms",
+    "Curiculum": ["ISC", "IDC"],
+    "credits": 8,
+    "requirements": []
+  },
+  {
+    "_id": { "$oid": "6713a0000000000000000002" },
+    "name": "Data Structures",
+    "Curiculum": ["ISC", "IDC"],
+    "credits": 8,
+    "requirements": []
+  },
+  {
+    "_id": { "$oid": "6713a0000000000000000003" },
+    "name": "Databases",
+    "Curiculum": ["ISC", "IDC"],
+    "credits": 8,
+    "requirements": [{ "$oid": "6713a0000000000000000002" }]
+  },
+  {
+    "_id": { "$oid": "6713a0000000000000000004" },
+    "name": "Operating Systems",
+    "Curiculum": ["ISC", "IDC"],
+    "credits": 8,
+    "requirements": [{ "$oid": "6713a0000000000000000002" }]
+  },
+  {
+    "_id": { "$oid": "6713a0000000000000000005" },
+    "name": "Web Development",
+    "Curiculum": ["ISC", "IDC"],
+    "credits": 6,
+    "requirements": [{ "$oid": "6713a0000000000000000002" }]
+  }
+]

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="8" failures="8" errors="0" time="82.104">
+  <testsuite name="Read Tests - Users" errors="0" failures="8" skipped="0" timestamp="2025-11-21T02:54:55" time="82" tests="8">
+    <testcase classname="Read Tests - Users" name="should read user data correctly" time="10.009">
+      <failure>Error: thrown: &quot;Exceeded timeout of 10000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at test (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:12:3)
+    at _dispatchDescribe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:10:1)
+    at Runtime._execModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Read Tests - Users" name="should read user data correctly" time="10.013">
+      <failure>Error: thrown: &quot;Exceeded timeout of 10000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at test (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:17:3)
+    at _dispatchDescribe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:10:1)
+    at Runtime._execModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Read Tests - Users" name="should read user data correctly" time="10.013">
+      <failure>Error: thrown: &quot;Exceeded timeout of 10000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at test (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:22:3)
+    at _dispatchDescribe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:10:1)
+    at Runtime._execModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Read Tests - Classes" name="should read a specific class" time="10.007">
+      <failure>Error: thrown: &quot;Exceeded timeout of 10000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at test (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:35:3)
+    at _dispatchDescribe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:33:1)
+    at Runtime._execModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Read Tests - Classes" name="should contain a list of classes based on the requirements" time="10.008">
+      <failure>Error: thrown: &quot;Exceeded timeout of 10000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at test (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:40:3)
+    at _dispatchDescribe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:33:1)
+    at Runtime._execModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Read Tests - Classes" name="should contain a list of classes " time="10.01">
+      <failure>Error: thrown: &quot;Exceeded timeout of 10000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at test (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:45:3)
+    at _dispatchDescribe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:33:1)
+    at Runtime._execModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Read Tests - Classrooms" name="should return a list of classrooms " time="10.003">
+      <failure>Error: thrown: &quot;Exceeded timeout of 10000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at test (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:59:3)
+    at _dispatchDescribe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:57:1)
+    at Runtime._execModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Read Tests - Courses" name="should return a list of courses " time="10.009">
+      <failure>Error: thrown: &quot;Exceeded timeout of 10000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at test (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:72:3)
+    at _dispatchDescribe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:91:26)
+    at describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\index.js:55:5)
+    at Object.describe (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\test\utils.test.js:70:1)
+    at Runtime._execModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1439:24)
+    at Runtime._loadModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:1022:12)
+    at Runtime.requireModule (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runtime\build\index.js:882:12)
+    at jestAdapter (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runTestInternal (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\angel\OneDrive\Documentos\semestre 6\infra desarollo continuo\proyecto\New\School_Calendar\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

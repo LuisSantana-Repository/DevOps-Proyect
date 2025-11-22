@@ -1,0 +1,90 @@
+# azure-pipelines-dev.yml
+trigger:
+  branches:
+    include:
+    - main
+
+resources:
+  repositories:
+  - repository: self
+
+variables:
+- name: tag
+  value: '$(Build.BuildId)'
+- name: testResultsDir
+  value: '$(System.DefaultWorkingDirectory)/test-results'
+
+stages:
+- stage: Build
+  displayName: Build and Test
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: Docker@2
+      displayName: Build an image
+      inputs:
+        repository: 'test'
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
+        tags: '$(tag)'
+    
+    # Crear directorio para resultados
+    - task: CmdLine@2
+      displayName: Create test directories
+      inputs:
+        script: mkdir -p $(testResultsDir)
+    
+    - task: CmdLine@2
+      displayName: Run tests
+      inputs:
+        script: docker run --rm -v $(testResultsDir):/usr/src/app/test-results -v ${PWD}/coverage:/usr/src/app/coverage test:$(tag) npm test -- --coverage
+    
+    - task: PublishTestResults@2
+      displayName: Publish test results
+      condition: always()
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '**/jest-*.xml'
+    
+    - task: PublishCodeCoverageResults@2
+      displayName: Publish coverage
+      condition: always()
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: 'coverage/cobertura-coverage.xml'
+        pathToSources: 'coverage'
+
+- stage: Publish
+  displayName: Publish and Deploy
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: Publish
+    displayName: Publish
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: Docker@2
+      displayName: Build and push to Docker Hub
+      inputs:
+        containerRegistry: 'Docker'
+        repository: 'santana981/back'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: |
+          $(tag)
+          latest
+
+    - task: AzureRmWebAppDeployment@5
+      displayName: Deploy to Azure
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: 'Azure for Students(5c5af051-317e-497e-a5e4-29d6dcd7054e)'
+        appType: 'webAppContainer'
+        WebAppName: 'Practica-cinco'
+        DockerNamespace: 'santana981'
+        DockerRepository: 'back'
+        DockerImageTag: '$(tag)'
