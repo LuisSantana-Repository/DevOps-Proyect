@@ -3,7 +3,7 @@
 # Script de stress test para generar muchos logs en Sentry
 # Útil para probar el volumen de logs y rendimiento
 
-BASE_URL="http://localhost:3001"
+export SENTRY_DSN="http://localhost:3001"
 
 echo "=========================================="
 echo "Sentry Stress Test - Generating Logs"
@@ -15,7 +15,7 @@ echo ""
 # ==========================================
 echo "📊 Test 1: Generating 20 log entries..."
 for i in {1..20}; do
-  curl -s "$BASE_URL/api/debug/log" > /dev/null &
+  curl -s "$SENTRY_DSN/api/debug/log" > /dev/null &
   echo -n "."
 done
 wait
@@ -27,9 +27,9 @@ echo ""
 # ==========================================
 echo "🔴 Test 2: Generating 15 error entries..."
 for i in {1..5}; do
-  curl -s "$BASE_URL/api/debug/error/type-error" > /dev/null &
-  curl -s "$BASE_URL/api/debug/error/server-error" > /dev/null &
-  curl -s "$BASE_URL/api/debug/error/database" > /dev/null &
+  curl -s "$SENTRY_DSN/api/debug/error/type-error" > /dev/null &
+  curl -s "$SENTRY_DSN/api/debug/error/server-error" > /dev/null &
+  curl -s "$SENTRY_DSN/api/debug/error/database" > /dev/null &
   echo -n "."
 done
 wait
@@ -41,7 +41,7 @@ echo ""
 # ==========================================
 echo "📝 Test 3: Generating 10 multi-level logs..."
 for i in {1..10}; do
-  curl -s "$BASE_URL/api/debug/log/multiple" > /dev/null &
+  curl -s "$SENTRY_DSN/api/debug/log/multiple" > /dev/null &
   echo -n "."
 done
 wait
@@ -57,7 +57,7 @@ for i in {1..15}; do
   ACTIONS=("create" "update" "delete" "read" "share")
   ACTION=${ACTIONS[$RANDOM % ${#ACTIONS[@]}]}
 
-  curl -s "$BASE_URL/api/debug/error/custom?userId=$USER_ID&action=$ACTION" > /dev/null &
+  curl -s "$SENTRY_DSN/api/debug/error/custom?userId=$USER_ID&action=$ACTION" > /dev/null &
   echo -n "."
 done
 wait
@@ -81,7 +81,7 @@ for i in {1..20}; do
   )
 
   ENDPOINT=${ENDPOINTS[$RANDOM % ${#ENDPOINTS[@]}]}
-  curl -s "$BASE_URL$ENDPOINT" > /dev/null &
+  curl -s "$SENTRY_DSN$ENDPOINT" > /dev/null &
   echo -n "."
 done
 wait
@@ -93,7 +93,7 @@ echo ""
 # ==========================================
 echo "💥 Test 6: Burst test - 50 rapid requests..."
 for i in {1..50}; do
-  curl -s "$BASE_URL/api/debug/log" > /dev/null &
+  curl -s "$SENTRY_DSN/api/debug/log" > /dev/null &
 done
 wait
 echo " ✓ Done"
@@ -104,7 +104,7 @@ echo ""
 # ==========================================
 echo "💚 Test 7: Health checks (10 requests)..."
 for i in {1..10}; do
-  curl -s "$BASE_URL/api/debug/health" > /dev/null &
+  curl -s "$SENTRY_DSN/api/debug/health" > /dev/null &
   echo -n "."
 done
 wait
