@@ -264,47 +264,51 @@ stages:
     # Solo deploy producción desde main branch
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     jobs:
-      - job: Deploy
+      - deployment: Deploy
         displayName: 'Deploy Production Docker image to Azure'
-        steps:
-          - task: AzureCLI@2
-            displayName: 'Configure Production Web App'
-            inputs:
-              azureSubscription: '$(azureServiceConnection)'
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                echo "Configurando Web App de PRODUCCIÓN..."
-                echo "Resource Group: $(prodResourceGroup)"
-                echo "Web App: $(prodWebAppName)"
-                echo "Image: $(productionImageName):latest"
+        environment: 'production'  # Requires manual approval in Azure DevOps
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureCLI@2
+                  displayName: 'Configure Production Web App'
+                  inputs:
+                    azureSubscription: '$(azureServiceConnection)'
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      echo "Configurando Web App de PRODUCCIÓN..."
+                      echo "Resource Group: $(prodResourceGroup)"
+                      echo "Web App: $(prodWebAppName)"
+                      echo "Image: $(productionImageName):latest"
 
-                # Set container configuration
-                az webapp config container set \
-                  --resource-group $(prodResourceGroup) \
-                  --name $(prodWebAppName) \
-                  --docker-custom-image-name $(productionImageName):latest \
-                  --docker-registry-server-url https://index.docker.io/v1/
+                      # Set container configuration
+                      az webapp config container set \
+                        --resource-group $(prodResourceGroup) \
+                        --name $(prodWebAppName) \
+                        --docker-custom-image-name $(productionImageName):latest \
+                        --docker-registry-server-url https://index.docker.io/v1/
 
-                # Configure environment variables
-                az webapp config appsettings set \
-                  --resource-group $(prodResourceGroup) \
-                  --name $(prodWebAppName) \
-                  --settings \
-                    MONGODB_URI="$(MONGODB_URI)" \
-                    DB_USER="$(DB_USER)" \
-                    DB_PASSWORD="$(DB_PASSWORD)" \
-                    DB_HOST="$(DB_HOST)" \
-                    DB_NAME="$(DB_NAME)" \
-                    DB_OPTIONS="$(DB_OPTIONS)" \
-                    TOKEN_KEY="$(TOKEN_KEY)" \
-                    NODE_ENV="production" \
-                    PORT="8080"
+                      # Configure environment variables
+                      az webapp config appsettings set \
+                        --resource-group $(prodResourceGroup) \
+                        --name $(prodWebAppName) \
+                        --settings \
+                          MONGODB_URI="$(MONGODB_URI)" \
+                          DB_USER="$(DB_USER)" \
+                          DB_PASSWORD="$(DB_PASSWORD)" \
+                          DB_HOST="$(DB_HOST)" \
+                          DB_NAME="$(DB_NAME)" \
+                          DB_OPTIONS="$(DB_OPTIONS)" \
+                          TOKEN_KEY="$(TOKEN_KEY)" \
+                          NODE_ENV="production" \
+                          PORT="8080"
 
-                echo "Reiniciando Web App..."
-                az webapp restart \
-                  --resource-group $(prodResourceGroup) \
-                  --name $(prodWebAppName)
+                      echo "Reiniciando Web App..."
+                      az webapp restart \
+                        --resource-group $(prodResourceGroup) \
+                        --name $(prodWebAppName)
 
-                echo "DEPLOY DE PRODUCCIÓN COMPLETADO"
-                echo "URL: https://$(prodWebAppName).azurewebsites.net"
+                      echo "DEPLOY DE PRODUCCIÓN COMPLETADO"
+                      echo "URL: https://$(prodWebAppName).azurewebsites.net"
