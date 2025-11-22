@@ -24,7 +24,10 @@ Este pipeline maneja automáticamente **Producción (main)** y **Desarrollo (dev
 2. **BuildAndPush** - Construye y sube imagen Docker (solo si coverage >= 40%)
    - `main` → `YOUR_USERNAME/devops-project-prod:latest`
    - `dev` → `YOUR_USERNAME/devops-project-dev:dev`
-3. **DeployProduction** - Despliega a Azure (SOLO main con coverage >= 40%)
+3. **DeployProduction** - 🔐 **REQUIERE APROBACIÓN MANUAL** (SOLO main con coverage >= 40%)
+   - Pipeline se pausa y espera aprobación
+   - Notifica a los aprobadores configurados
+   - Despliega a Azure solo si se aprueba
 
 ---
 
@@ -77,7 +80,120 @@ developmentImageName:
    - **Service connection name:** `Azure`
 5. Click **Save**
 
-### **Paso 3: Configurar Variables Secretas**
+### **Paso 3: Configurar Environment con Aprobación Manual** 🔐
+
+**IMPORTANTE:** Este paso configura la aprobación manual para producción. La imagen Docker NO se desplegará a Azure hasta que alguien apruebe manualmente.
+
+#### ¿Cómo funciona?
+
+El pipeline tiene 3 etapas:
+
+1. **Validate** - Se ejecuta automáticamente ✅
+2. **BuildAndPush** - Se ejecuta automáticamente si los tests pasan ✅
+3. **DeployProduction** - ⏸️ **ESPERA APROBACIÓN MANUAL** antes de desplegar a Azure
+
+#### Configurar el Environment:
+
+1. Ve a **Pipelines** → **Environments**
+2. Click **New environment**
+3. Ingresa:
+   - **Name:** `production` (debe coincidir exactamente con el YAML)
+   - **Description:** "Production environment - requires approval"
+   - **Resource:** None (deja vacío)
+4. Click **Create**
+
+#### Agregar Aprobaciones:
+
+1. En la página del environment `production`, click en los **3 puntos (⋮)** en la esquina superior derecha
+2. Selecciona **Approvals and checks**
+3. Click **Approvals**
+4. Configura:
+   - **Approvers:** Selecciona usuarios o grupos que pueden aprobar (ej: tú mismo, tu equipo)
+   - **Minimum number of approvers:** 1 (o más si quieres múltiples aprobadores)
+   - **Timeout:** 30 days (tiempo máximo que esperará la aprobación)
+   - **Instructions to approvers:** "Please review the changes and approve deployment to production"
+5. Click **Save**
+
+#### ¿Qué pasa cuando el pipeline llega a DeployProduction?
+
+```
+┌─────────────────────────────────────────────────┐
+│  Pipeline Execution Flow                        │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  Stage 1: Validate                              │
+│    ✅ Tests ejecutados                          │
+│    ✅ Coverage >= 40%                           │
+│                                                 │
+│  Stage 2: BuildAndPush                          │
+│    ✅ Docker image construida                   │
+│    ✅ Image subida a Docker Hub                 │
+│         → devops-project-prod:latest            │
+│                                                 │
+│  Stage 3: DeployProduction                      │
+│    ⏸️  ESPERANDO APROBACIÓN...                  │
+│                                                 │
+│    📧 Email enviado a los aprobadores           │
+│    🔔 Notificación en Azure DevOps              │
+│                                                 │
+│    ┌─────────────────────────────┐             │
+│    │  Aprobador revisa cambios   │             │
+│    │  ✅ Approve  o  ❌ Reject    │             │
+│    └─────────────────────────────┘             │
+│                                                 │
+│    Si APROBADO:                                 │
+│    ✅ Deploy a Azure Web App                    │
+│    ✅ Pipeline completo                         │
+│                                                 │
+│    Si RECHAZADO:                                │
+│    ❌ Deploy cancelado                          │
+│    ❌ Pipeline falla                            │
+└─────────────────────────────────────────────────┘
+```
+
+#### Proceso de Aprobación:
+
+1. **Pipeline se ejecuta automáticamente** cuando haces push a `main`
+2. **Tests y build completan** - La imagen Docker ya está en Docker Hub
+3. **Pipeline se pausa** antes de Deploy
+4. **Recibes notificación** (email y en Azure DevOps)
+5. **Revisas el pipeline:**
+   - Ve a **Pipelines** → Tu pipeline → Click en el run
+   - Verás un banner: "This run is waiting for approval on production environment"
+6. **Click en "Review"**
+7. **Revisas los cambios:**
+   - ¿Pasaron todos los tests?
+   - ¿El coverage es suficiente?
+   - ¿Los commits son correctos?
+8. **Tomas decisión:**
+   - ✅ **Approve:** Click "Approve" → El deploy a Azure continúa
+   - ❌ **Reject:** Click "Reject" → El deploy se cancela
+   - 💬 Puedes agregar comentarios explicando tu decisión
+
+#### Ventajas de este enfoque:
+
+✅ **Seguridad:** Nadie puede desplegar a producción sin aprobación
+✅ **Flexibilidad:** La imagen ya está en Docker Hub aunque rechaces el deploy
+✅ **Trazabilidad:** Todas las aprobaciones quedan registradas
+✅ **Control:** Puedes revisar cambios antes de afectar producción
+
+#### Configuraciones Adicionales (Opcional):
+
+Puedes agregar más checks al environment:
+
+1. **Branch control:** Solo permitir deploys desde `main`
+   - En Approvals and checks → Branch control
+   - Allowed branches: `main`
+
+2. **Business hours:** Solo permitir deploys en horario laboral
+   - En Approvals and checks → Business hours
+   - Define tu horario permitido
+
+3. **Invoke REST API:** Llamar a un webhook antes de deploy
+   - En Approvals and checks → Invoke REST API
+   - URL de tu servicio de validación
+
+### **Paso 4: Configurar Variables Secretas**
 
 Ve a **Pipelines** → Tu pipeline → **Edit** → **Variables**
 
@@ -93,7 +209,7 @@ Agrega estas variables como **secretas** (🔒):
 | `DB_OPTIONS` | `retryWrites=true&w=majority` | ✗ |
 | `TOKEN_KEY` | Tu secret key para JWT | ✓ |
 
-### **Paso 4: Crear/Configurar Azure Resources (Solo para Producción)**
+### **Paso 5: Crear/Configurar Azure Resources (Solo para Producción)**
 
 **NOTA:** Solo creamos recursos de Azure para **Producción**. La imagen de desarrollo se sube a Docker Hub pero NO se despliega a Azure automáticamente.
 
@@ -133,7 +249,7 @@ docker run -p 3000:3000 \
   YOUR_USERNAME/devops-project-dev:dev
 ```
 
-### **Paso 5: Configurar el Pipeline en Azure DevOps**
+### **Paso 6: Configurar el Pipeline en Azure DevOps**
 
 1. Ve a **Pipelines** → **New pipeline**
 2. Selecciona tu repositorio
@@ -215,7 +331,9 @@ git pull origin dev
 │  Push a main                                    │
 │  ✓ Validate (tests + coverage)                 │
 │  ✓ BuildAndPush → devops-project-prod:latest   │
-│  ✓ DeployProduction → Azure Prod               │
+│  ⏸️  DeployProduction → WAITING FOR APPROVAL    │
+│     👤 Aprobador revisa y aprueba/rechaza       │
+│  ✓ Deploy a Azure Prod (si se aprueba)         │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -336,9 +454,11 @@ Pipeline detenido ❌
 2. **Solo push a main/dev construye imágenes** - Después de merge (si coverage >= 40%)
 3. **Diferentes imágenes para cada ambiente** - Producción y desarrollo separados
 4. **Solo MAIN despliega a Azure** - La rama dev solo sube imagen a Docker Hub
-5. **Imagen dev disponible en Docker Hub** - Puedes descargarla y ejecutarla localmente
-6. **Variables secretas** - NUNCA las commits al repositorio
-7. **Coverage mínimo obligatorio** - 40% statements/lines, 30% functions/branches
+5. **🔐 Deploy a producción REQUIERE APROBACIÓN MANUAL** - El pipeline se pausa y espera tu aprobación
+6. **Imagen ya está en Docker Hub antes de aprobar** - Incluso si rechazas, la imagen ya fue publicada
+7. **Imagen dev disponible en Docker Hub** - Puedes descargarla y ejecutarla localmente
+8. **Variables secretas** - NUNCA las commits al repositorio
+9. **Coverage mínimo obligatorio** - 40% statements/lines, 30% functions/branches
 
 ---
 
@@ -347,9 +467,12 @@ Pipeline detenido ❌
 - [ ] Edité `azure-pipelines-unified.yml` con mis nombres de imagen Docker
 - [ ] Configuré Docker Hub service connection en Azure DevOps
 - [ ] Configuré Azure service connection (solo para deploy de producción)
+- [ ] **Creé environment `production` con aprobaciones manuales** 🔐
+- [ ] Agregué aprobadores al environment (yo u otros miembros del equipo)
 - [ ] Agregué variables secretas (MONGODB_URI, DB_PASSWORD, TOKEN_KEY, etc.)
 - [ ] Creé el resource group de PRODUCCIÓN en Azure (rg-devops-prod)
 - [ ] Creé la web app de PRODUCCIÓN en Azure (webapp-devops-prod)
 - [ ] Configuré el pipeline en Azure DevOps
 - [ ] Hice un PR de prueba para verificar que funciona
 - [ ] Verifiqué que la imagen dev se sube a Docker Hub (sin deploy a Azure)
+- [ ] Probé el flujo de aprobación haciendo push a main
