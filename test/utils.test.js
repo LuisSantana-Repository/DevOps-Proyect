@@ -1,7 +1,13 @@
-const {User} = require('../db/User'); 
-const {Class} = require('../db/Class'); 
-const {Classroom} = require('../db/Classroom'); 
-const {Course} = require('../db/Course'); 
+const {User} = require('../db/User');
+const {Class} = require('../db/Class');
+const {Classroom} = require('../db/Classroom');
+const {Course} = require('../db/Course');
+const {mongoose} = require('../db/connectdb');
+
+// Close database connection after all tests
+afterAll(async () => {
+  await mongoose.connection.close();
+});
 
 // ─────────────────────────────────────
 //   USERS

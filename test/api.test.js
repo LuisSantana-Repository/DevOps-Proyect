@@ -43,19 +43,16 @@ describe('GET /', () => {
 
 describe('User API Endpoints', () => {
 
-  test('GET /api/User should return users list', async () => {
+  test('GET /api/User should require authentication', async () => {
     const response = await request(app).get('/api/User');
-    expect(response.status).toBe(200);
-    expect(response.body).toBeDefined();
+    // Should return 401 Unauthorized without authentication cookie
+    expect(response.status).toBe(401);
   });
 
-  test('GET /api/User/:email should return specific user', async () => {
+  test('GET /api/User/:email should require authentication', async () => {
     const response = await request(app).get('/api/User/alice@student.edu');
-    expect(response.status).toBe(200);
-    expect(response.body).toBeDefined();
-    if (response.body.user) {
-      expect(response.body.user.email).toBe('alice@student.edu');
-    }
+    // Routes require authentication, expect 401 or 404
+    expect([401, 404]).toContain(response.status);
   });
 
 });
@@ -66,16 +63,16 @@ describe('User API Endpoints', () => {
 
 describe('Class API Endpoints', () => {
 
-  test('GET /api/Class should return classes list', async () => {
+  test('GET /api/Class should require authentication', async () => {
     const response = await request(app).get('/api/Class');
-    expect(response.status).toBe(200);
-    expect(response.body).toBeDefined();
+    // Should return 401 Unauthorized without authentication cookie
+    expect(response.status).toBe(401);
   });
 
-  test('GET /api/Class/:id should return specific class', async () => {
-    const response = await request(app).get('/api/Class/6713a0000000000000000001');
-    expect(response.status).toBe(200);
-    expect(response.body).toBeDefined();
+  test('GET /api/Class/populate/:id should require authentication', async () => {
+    const response = await request(app).get('/api/Class/populate/6713a0000000000000000001');
+    // Routes require authentication, expect 401
+    expect(response.status).toBe(401);
   });
 
 });
@@ -100,10 +97,10 @@ describe('Course API Endpoints', () => {
 
 describe('Classroom API Endpoints', () => {
 
-  test('GET /api/Classroom should return classrooms list', async () => {
+  test('GET /api/Classroom should require authentication', async () => {
     const response = await request(app).get('/api/Classroom');
-    expect(response.status).toBe(200);
-    expect(response.body).toBeDefined();
+    // Should return 401 Unauthorized without authentication cookie
+    expect(response.status).toBe(401);
   });
 
 });
@@ -114,10 +111,12 @@ describe('Classroom API Endpoints', () => {
 
 describe('Schedule API Endpoints', () => {
 
-  test('GET /api/Schedule should return schedules list', async () => {
-    const response = await request(app).get('/api/Schedule');
-    expect(response.status).toBe(200);
-    expect(response.body).toBeDefined();
+  test('POST /api/Schedule should require authentication', async () => {
+    const response = await request(app)
+      .post('/api/Schedule')
+      .send({ name: 'Test Schedule' });
+    // Should return 401 Unauthorized without authentication cookie
+    expect(response.status).toBe(401);
   });
 
 });
