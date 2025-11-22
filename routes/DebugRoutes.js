@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const Sentry = require("@sentry/node");
 
 /**
  * Debug Routes for Testing Sentry Error Tracking and Logging
@@ -21,8 +22,13 @@ router.get('/log', async (req, res) => {
     console.warn('[WARN] This is a warning message');
     console.error('[ERROR] This is an error message');
 
+    // Send messages to Sentry
+    Sentry.captureMessage('Info log endpoint called', 'info');
+    Sentry.captureMessage('Warning message from debug route', 'warning');
+    Sentry.captureMessage('Error message from debug route', 'error');
+
     res.status(200).json({
-        message: 'Logs generated successfully',
+        message: 'Logs generated successfully (sent to Sentry)',
         logs: ['info', 'warning', 'error']
     });
 });
@@ -30,6 +36,11 @@ router.get('/log', async (req, res) => {
 // Generate a 400 Bad Request error
 router.get('/error/bad-request', async (req, res) => {
     console.error('[ERROR] Bad Request error triggered');
+
+    const error = new Error('This is a simulated bad request error');
+    error.statusCode = 400;
+    Sentry.captureException(error);
+
     res.status(400).json({
         error: 'Bad Request',
         message: 'This is a simulated bad request error',
@@ -40,6 +51,11 @@ router.get('/error/bad-request', async (req, res) => {
 // Generate a 404 Not Found error
 router.get('/error/not-found', async (req, res) => {
     console.error('[ERROR] Not Found error triggered');
+
+    const error = new Error('This is a simulated not found error');
+    error.statusCode = 404;
+    Sentry.captureException(error);
+
     res.status(404).json({
         error: 'Not Found',
         message: 'This is a simulated not found error',
@@ -50,6 +66,11 @@ router.get('/error/not-found', async (req, res) => {
 // Generate a 500 Internal Server Error
 router.get('/error/server-error', async (req, res) => {
     console.error('[ERROR] Internal Server Error triggered');
+
+    const error = new Error('This is a simulated internal server error');
+    error.statusCode = 500;
+    Sentry.captureException(error);
+
     res.status(500).json({
         error: 'Internal Server Error',
         message: 'This is a simulated internal server error',
@@ -65,6 +86,7 @@ router.get('/error/type-error', async (req, res) => {
         obj.someMethod(); // This will throw TypeError
     } catch (error) {
         console.error('[ERROR] TypeError caught:', error.message);
+        Sentry.captureException(error);
         res.status(500).json({
             error: 'TypeError',
             message: error.message,
@@ -80,6 +102,7 @@ router.get('/error/reference-error', async (req, res) => {
         undefinedVariable.someMethod(); // This will throw ReferenceError
     } catch (error) {
         console.error('[ERROR] ReferenceError caught:', error.message);
+        Sentry.captureException(error);
         res.status(500).json({
             error: 'ReferenceError',
             message: error.message,
@@ -93,6 +116,7 @@ router.get('/error/uncaught', async (req, res, next) => {
     console.error('[ERROR] Throwing uncaught exception');
     const error = new Error('This is an uncaught exception for testing');
     error.statusCode = 500;
+    Sentry.captureException(error);
     next(error); // Pass to Express error handler
 });
 
@@ -108,6 +132,7 @@ router.get('/error/async', async (req, res) => {
         });
     } catch (error) {
         console.error('[ERROR] Async error caught:', error.message);
+        Sentry.captureException(error);
         res.status(500).json({
             error: 'AsyncError',
             message: error.message,
@@ -124,8 +149,15 @@ router.get('/log/multiple', async (req, res) => {
     console.error('[ERROR] Failed to connect to external service');
     console.debug('[DEBUG] Variable state:', { foo: 'bar', count: 42 });
 
+    // Send various severity levels to Sentry
+    Sentry.captureMessage('Starting multiple log generation', 'log');
+    Sentry.captureMessage('User action tracked', 'info');
+    Sentry.captureMessage('Resource usage at 75%', 'warning');
+    Sentry.captureMessage('Failed to connect to external service', 'error');
+    Sentry.captureMessage('Variable state captured', 'debug');
+
     res.status(200).json({
-        message: 'Multiple logs generated',
+        message: 'Multiple logs generated (sent to Sentry)',
         levels: ['log', 'info', 'warn', 'error', 'debug']
     });
 });
@@ -139,6 +171,7 @@ router.get('/error/database', async (req, res) => {
     dbError.code = 'ETIMEDOUT';
 
     console.error('[ERROR] Database error:', dbError);
+    Sentry.captureException(dbError);
 
     res.status(503).json({
         error: 'Database Error',
@@ -156,6 +189,25 @@ router.get('/error/custom', async (req, res) => {
         userId,
         action,
         timestamp: new Date().toISOString()
+    });
+
+    const customError = new Error(`Failed to perform action: ${action}`);
+    customError.userId = userId;
+    customError.action = action;
+
+    // Capture with additional context
+    Sentry.captureException(customError, {
+        contexts: {
+            custom: {
+                userId,
+                action,
+                timestamp: new Date().toISOString()
+            }
+        },
+        tags: {
+            userId,
+            action
+        }
     });
 
     res.status(400).json({
